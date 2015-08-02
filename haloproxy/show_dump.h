@@ -40,6 +40,7 @@ void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
                             *p,
                             *limit,
                             *glimit = data + len;
+    unsigned int            num_bytes_added = 0;
 
     memset(buff + 2, ' ', 48);
 
@@ -47,53 +48,57 @@ void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
     // less than the total length of the data...
     while(data < glimit) {
 
-		// limit = 16 bytes after the current byte being printed
+        // limit = 16 bytes after the current byte being printed
         limit = data + 16;
 
-		// if the limit is greater than the last byte of data to be printed...
+        // if the limit is greater than the last byte of data to be printed...
         if(limit > glimit) {
-			// set the limit to the last byte of data to be printed
+            // set the limit to the last byte of data to be printed
             limit = glimit;
 
             // set buff to 48 bytes of <space>
             memset(buff, ' ', 48);
         }
 
-		// p = the address of the receiving buffer that holds the data to be printed
+        // p = the address of the receiving buffer that holds the data to be printed
         p     = buff;
 
-		// bytes = 50 bytes after the address of the receiving buffer that
-		// holds the data to be printed. the purpose of this is to have bytes
-		// in their own column on the right.
+        // bytes = 50 bytes after the address of the receiving buffer that
+        // holds the data to be printed. the purpose of this is to have bytes
+        // in their own column on the right.
         bytes = p + 50;
 
-		// while the current byte being printed is less than the limit...
+        // while the current byte being printed is less than the limit...
         while(data < limit) {
-			// the current character equals the value at the current address of data
+            // the current character equals the value at the current address of data
             chr = *data;
 
-			// p = the left hex character of the current byte (increment p)
+            // p = the left hex character of the current byte (increment p)
             *p++ = hex[chr >> 4];
 
-			// p = the right hex character of the current byte (increment p)
+            // p = the right hex character of the current byte (increment p)
             *p++ = hex[chr & 15];
 
-			// increment p
+            // increment p
             p++;
 
-			// the current byte: either the character or a period
-            *bytes++ = ((chr < ' ') || (chr >= 0x7f)) ? '.' : chr;
+            // the current byte: either the character or a period
+            //*bytes++ = ((chr < ' ') || (chr >= 0x7f)) ? '.' : chr;
 
-			// move to the next byte being printed
+            // move to the next byte being printed
             data++;
+            num_bytes_added++;
         }
 
-		// add a newline character
-        *bytes++ = '\n';
+        // add a newline character
+        //*bytes++ = '\n';
 
-		// print the current portion of the buffer that has just been
-		// populated with hex representations and bits
-        fwrite(buff, bytes - buff, 1, stream);
+        unsigned int num_characters_to_print = num_bytes_added * 3;
+        num_bytes_added = 0;
+
+        // print the current portion of the buffer that has just been
+        // populated with hex representations and bits
+        fwrite(buff, num_characters_to_print, 1, stream);
     }
 }
 

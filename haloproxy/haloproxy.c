@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
           < 0) std_err();
 
         if(FD_ISSET(sd1, &rset)) {
-            printf("\n    ### CLIENT ###\n");
+            printf("\nclient: ");
             RECV(sd1, peer1);
 
             if(ntohs(gh->sign) == 0xfefd) {
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
             SEND(sd2, peer2);
 
         } else if(FD_ISSET(sd2, &rset)) {
-            printf("\n    ### SERVER ###\n");
+            printf("\nserver: ");
             RECV(sd2, peer2);
 
             if((ntohs(gh->sign) == 0xfefe) && (gh->type == 2) && (ntohs(gh->gs1) == 0) && (ntohs(gh->gs2) == 1)) {
