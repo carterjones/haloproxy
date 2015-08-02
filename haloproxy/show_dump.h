@@ -30,9 +30,9 @@ Usage:
 
 #include <string.h>
 
+typedef enum { false, true } bool;
 
-
-void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
+void show_dump(unsigned char *data, unsigned int len, FILE *stream, bool is_client) {
     const static char       hex[] = "0123456789abcdef";
     static unsigned char    buff[67];   /* HEX  CHAR\n */
     unsigned char           chr,
@@ -41,6 +41,11 @@ void show_dump(unsigned char *data, unsigned int len, FILE *stream) {
                             *limit,
                             *glimit = data + len;
     unsigned int            num_bytes_added = 0;
+
+    if (is_client == false)
+    {
+        return;
+    }
 
     memset(buff + 2, ' ', 48);
 

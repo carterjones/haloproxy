@@ -198,15 +198,15 @@ int main(int argc, char *argv[]) {
                     genkeys("client", hash1, hash1, psdk + 32, psdk + 32, deckey1, enckey1);
                     memcpy(psdk + 32, basekey2, 16);
                 }
-                show_dump(buff, len, stdout);
+                show_dump(buff, len, stdout, true);
             } else {
-                decshow(buff, len, deckey1, enckey2);
+                decshow(buff, len, deckey1, enckey2, true);
             }
 
             SEND(sd2, peer2);
 
         } else if(FD_ISSET(sd2, &rset)) {
-            printf("\nserver: ");
+            //printf("\nserver: ");
             RECV(sd2, peer2);
 
             if((ntohs(gh->sign) == 0xfefe) && (gh->type == 2) && (ntohs(gh->gs1) == 0) && (ntohs(gh->gs2) == 1)) {
@@ -220,9 +220,9 @@ int main(int argc, char *argv[]) {
                     memcpy(psdk, basekey1, 16);
                     plain = 0;
                 }
-                show_dump(buff, len, stdout);
+                show_dump(buff, len, stdout, false);
             } else {
-                decshow(buff, len, deckey2, enckey1);
+                decshow(buff, len, deckey2, enckey1, false);
             }
 
             SEND(sd1, peer1);
@@ -245,7 +245,7 @@ void genkeys(u8 *text, u8 *hash1, u8 *hash2, u8 *skey1, u8 *skey2, u8 *dkey1, u8
 
 
 
-void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey) {
+void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey, bool is_client) {
     gh_t    *gh;
     int     head;
 
@@ -253,12 +253,12 @@ void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey) {
     gh   = (gh_t *)buff;
 
     if(ntohs(gh->sign) == 0xfefd) { /* info */
-        show_dump(buff, len, stdout);
+        show_dump(buff, len, stdout, is_client);
         return;
     }
     if(ntohs(gh->sign) == 0xfefe) {
         if(len <= 7) {
-            show_dump(buff, len, stdout);
+            show_dump(buff, len, stdout, is_client);
             return;
         }
         head = 7;
@@ -266,8 +266,8 @@ void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey) {
 
     halo_tea_decrypt(buff + head, len - head, deckey);
 
-    if(head) show_dump(buff, head, stdout);
-    halobits(buff + head, len - head);
+    if (head) show_dump(buff, head, stdout, is_client);
+    halobits(buff + head, len - head, is_client);
 
     halo_tea_encrypt(buff + head, len - head, enckey);
 }
@@ -286,7 +286,7 @@ int read_bstr(u8 *data, u32 len, u8 *buff, u32 bitslen) {
 
 
 
-void halobits(u8 *buff, int buffsz) {
+void halobits(u8 *buff, int buffsz, bool is_client) {
     int     b,
             n,
             o;
@@ -305,7 +305,7 @@ void halobits(u8 *buff, int buffsz) {
 
         if((b + n) > buffsz) break;
         b = read_bstr(str, n, buff, b);
-        show_dump(str, n, stdout);
+        show_dump(str, n, stdout, is_client);
     }
 }
 
