@@ -1,0 +1,9 @@
+*
+!.gitignore
+!haloproxy.sln
+!haloproxy/haloproxy.c
+!haloproxy/haloproxy.vcxproj
+!haloproxy/halo_pck_algo.h
+!haloproxy/rwbits.h
+!haloproxy/show_dump.h
+!haloproxy/winerr.h
