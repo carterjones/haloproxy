@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
           < 0) std_err();
 
         if(FD_ISSET(sd1, &rset)) {
-            printf("\nclient: ");
+            //printf("\nclient: ");
             RECV(sd1, peer1);
 
             if(ntohs(gh->sign) == 0xfefd) {
@@ -253,12 +253,12 @@ void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey, bool is_client) {
     gh   = (gh_t *)buff;
 
     if(ntohs(gh->sign) == 0xfefd) { /* info */
-        show_dump(buff, len, stdout, is_client);
+        //show_dump(buff, len, stdout, is_client);
         return;
     }
     if(ntohs(gh->sign) == 0xfefe) {
         if(len <= 7) {
-            show_dump(buff, len, stdout, is_client);
+            //show_dump(buff, len, stdout, is_client);
             return;
         }
         head = 7;
@@ -266,7 +266,7 @@ void decshow(u8 *buff, int len, u8 *deckey, u8 *enckey, bool is_client) {
 
     halo_tea_decrypt(buff + head, len - head, deckey);
 
-    if (head) show_dump(buff, head, stdout, is_client);
+    // if (head) show_dump(buff, head, stdout, is_client);
     halobits(buff + head, len - head, is_client);
 
     halo_tea_encrypt(buff + head, len - head, enckey);
@@ -282,6 +282,18 @@ int read_bstr(u8 *data, u32 len, u8 *buff, u32 bitslen) {
         bitslen += 8;
     }
     return(bitslen);
+}
+
+
+
+void print_byte_as_hex(unsigned char *data) {
+    const static char hex[] = "0123456789abcdef";
+    unsigned char     chr = *data,
+        c1, c2;
+
+    c1 = hex[chr >> 4];
+    c2 = hex[chr & 15];
+    printf("%x%x", c1, c2);
 }
 
 
@@ -305,7 +317,37 @@ void halobits(u8 *buff, int buffsz, bool is_client) {
 
         if((b + n) > buffsz) break;
         b = read_bstr(str, n, buff, b);
-        show_dump(str, n, stdout, is_client);
+        //show_dump(str, n, stdout, is_client);
+
+        if (is_client) {
+            // check to see if the master chief is changing viewing angles
+            // the viewing angle is changed with either the 02, 04, or 06 byte
+            // 02 = ???
+            // 04 = ???
+            // 06 = ???
+            // this occurs on the 9th byte
+            u8 cmd_chr = *(str + 1);
+            if (cmd_chr == 02 ||
+                cmd_chr == 04 ||
+                cmd_chr == 06)
+            {
+                char value[4];
+                memcpy(value, str + 2, 4);
+
+                //uint32_t value;
+                uint8_t lolo = (*(value + 0)) & 0xFF;
+                uint8_t lohi = (*(value + 1)) & 0xFF;
+                uint8_t hilo = (*(value + 2)) & 0xFF;
+                uint8_t hihi = (*(value + 3)) & 0xFF;
+
+                float real_value = (hihi << 24)
+                                    | (hilo << 16)
+                                    | (lohi << 8)
+                                    | (lolo << 0);
+
+                printf("direction: %f\n", real_value);
+            }
+        }
     }
 }
 
